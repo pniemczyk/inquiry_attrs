@@ -64,14 +64,39 @@ inquirer :status, :role, :plan   # wraps multiple readers at once
 | `Symbol` | `InquiryAttrs::SymbolInquiry.new(raw)` |
 | Any other string | `raw.to_s.inquiry` → `ActiveSupport::StringInquirer` |
 
+## Reserved predicate names
+
+Several predicate names are **already defined as real methods** on the returned
+objects. `method_missing` is never reached for them, so they **do not** test
+whether the raw attribute value equals that word — they invoke the existing method.
+
+| Predicate | Defined by | What it tests |
+|---|---|---|
+| `nil?` | Ruby `Object` | Whether the object is `nil` — always `false` for present values |
+| `blank?` | ActiveSupport | Whether the value is blank (nil / "" / whitespace) |
+| `present?` | ActiveSupport | Opposite of `blank?` |
+| `empty?` | Ruby `String` / `NilInquiry` | Whether the string is `""` |
+| `frozen?` | Ruby `Object` | Whether the object is frozen |
+
+**Code generation rule:** when a model's attribute domain includes values whose
+names match the table above (e.g. a `state` column that can hold `"blank"` or
+`"nil"`), use direct string comparison — never a predicate:
+
+```ruby
+record.state == 'blank'    # ✅ tests string equality
+record.state.blank?        # ❌ tests blankness, not state == "blank"
+```
+
 ## Class responsibilities
 
 ### `InquiryAttrs::NilInquiry`
 
 - Frozen singleton (`INSTANCE`)
-- `nil?` → `true`; `blank?` → `true`; `present?` → `false`
-- Every `?`-method → `false` via `method_missing`
+- `nil?` → `true`; `blank?` → `true`; `empty?` → `true`; `present?` → `false`
+- Every `?`-method → `false` via `method_missing` (except the explicit overrides above)
 - `== nil`, `== ""`, `== INSTANCE` → `true`
+- `is_a?(NilClass)`, `kind_of?(NilClass)`, `instance_of?(NilClass)` → `true`
+  (`NilClass` cannot be subclassed; overridden explicitly)
 - Implements `to_s`, `to_str`, `inspect`
 
 ### `InquiryAttrs::SymbolInquiry < SimpleDelegator`
@@ -80,7 +105,8 @@ inquirer :status, :role, :plan   # wraps multiple readers at once
 - Unwraps nested `SymbolInquiry` on init
 - Any `?`-method returns `true` iff `sym.to_s == method_name.delete_suffix('?')`
 - `==` accepts `Symbol`, `String`, or `SymbolInquiry`
-- `is_a?(Symbol)` → `true` (and `kind_of?`)
+- `is_a?(Symbol)`, `kind_of?(Symbol)`, `instance_of?(Symbol)` → `true`
+  (`Symbol` cannot be subclassed; overridden explicitly)
 - `nil?` → `false`; `blank?` → `false`; `present?` → `true`
 
 ### `InquiryAttrs::Concern`

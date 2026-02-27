@@ -11,6 +11,27 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.0.2] — 2026-02-27
+
+### Added
+
+- **`NilInquiry#is_a?` / `#kind_of?` / `#instance_of?`** — all three type-check
+  methods now return `true` when called with `NilClass` as the argument.
+  `NilClass` cannot be subclassed in Ruby, so the methods are overridden
+  explicitly (the same technique already used by `SymbolInquiry` for `Symbol`).
+  `is_a?(InquiryAttrs::NilInquiry)` continues to return `true`.
+
+- **`SymbolInquiry#kind_of?` / `#instance_of?`** — aliased to the existing
+  `is_a?` override so all three type-check methods consistently return `true`
+  for `Symbol` and the `SymbolInquiry` class itself.
+
+- **README — ⚠️ Reserved predicate names** — new section documenting that
+  attribute values whose names match built-in Ruby/Rails `?`-methods (`nil`,
+  `blank`, `present`, `empty`, `frozen`) will invoke the real method rather than
+  testing string equality, and explaining the safe `== 'value'` alternative.
+
+---
+
 ## [1.0.0] — 2026-02-27
 
 ### Added
@@ -80,5 +101,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-[Unreleased]: https://github.com/pniemczyk/inquiry_attrs/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pniemczyk/inquiry_attrs/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/pniemczyk/inquiry_attrs/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/pniemczyk/inquiry_attrs/releases/tag/v1.0.0

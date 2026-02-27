@@ -92,6 +92,26 @@ database in `test/test_helper.rb`.
 
 ---
 
+## Architecture — reserved predicate names
+
+Some predicate names are **already defined as real methods** on the returned
+objects. `method_missing` is never reached for them, so calling them does **not**
+test whether the attribute value equals that word.
+
+| Predicate | Defined on | What it actually does |
+|---|---|---|
+| `nil?` | Ruby `Object` | `false` for any present value; `true` for `NilInquiry` |
+| `blank?` | ActiveSupport | `true` when value is blank — not when it equals `"blank"` |
+| `present?` | ActiveSupport | Opposite of `blank?` — not when value equals `"present"` |
+| `empty?` | Ruby `String` | `true` only for `""` — not when value equals `"empty"` |
+| `frozen?` | Ruby `Object` | Reflects freeze state of the object |
+
+**When generating or reviewing code:** if an attribute's domain values include
+`nil`, `blank`, `present`, `empty`, or `frozen`, flag this and suggest direct
+string comparison (`== 'blank'`) rather than a predicate.
+
+---
+
 ## Architecture — the `instance_method` capture pattern
 
 This is the **most important** design decision in `concern.rb`:
@@ -166,9 +186,11 @@ auto-include anything on load — that would be implicit and hard to audit.
 ### `NilInquiry` (`lib/inquiry_attrs/nil_inquiry.rb`)
 
 - Frozen singleton: `NilInquiry::INSTANCE`
-- `nil?` → `true`; `blank?` → `true`; `present?` → `false`
+- `nil?` → `true`; `blank?` → `true`; `empty?` → `true`; `present?` → `false`
 - Any `?`-method → `false` via `method_missing`
 - `== nil`, `== ""`, `== INSTANCE` → `true`
+- `is_a?(NilClass)`, `kind_of?(NilClass)`, `instance_of?(NilClass)` → `true`
+  (`NilClass` cannot be subclassed; methods are overridden explicitly)
 - Implements `to_s` / `to_str` / `inspect`
 
 ### `SymbolInquiry` (`lib/inquiry_attrs/symbol_inquiry.rb`)
@@ -177,7 +199,8 @@ auto-include anything on load — that would be implicit and hard to audit.
 - Raises `ArgumentError` for non-Symbol; unwraps nested `SymbolInquiry`
 - `?`-method returns `true` iff `sym.to_s == method_name.delete_suffix('?')`
 - `==` accepts `Symbol`, `String`, or `SymbolInquiry`
-- `is_a?(Symbol)` and `kind_of?(Symbol)` → `true`
+- `is_a?(Symbol)`, `kind_of?(Symbol)`, `instance_of?(Symbol)` → `true`
+  (`Symbol` cannot be subclassed; methods are overridden explicitly)
 - `nil?` → `false`; `blank?` → `false`; `present?` → `true`
 
 ### `Concern` (`lib/inquiry_attrs/concern.rb`)
@@ -219,6 +242,7 @@ auto-include anything on load — that would be implicit and hard to audit.
 | Stub `Rails.root` in tests | Use `Installer.install!(tmpdir)` instead |
 | Add a dependency on anything outside ActiveSupport/ActiveRecord/Railties | This is a Rails gem; Rails is already the dependency |
 | Introduce allocation inside the hot path (e.g. `String.new.extend(...)`) | `NilInquiry::INSTANCE` is a frozen singleton for a reason |
+| Suggest `.blank?` / `.nil?` / `.present?` / `.empty?` / `.frozen?` as inquiry predicates for those exact values | These are real methods, not inquiry predicates — they test object state, not string equality. Use `== 'blank'` etc. instead |
 
 ---
 

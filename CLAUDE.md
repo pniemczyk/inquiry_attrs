@@ -110,3 +110,28 @@ gem build inquiry_attrs.gemspec
 - **Never** call `inquirer` before `attr_accessor` in plain Ruby classes
 - **Never** broaden the `rescue` in `concern.rb`
 - **Never** stub `Rails.root` in tests — use `Installer.install!(tmpdir)` instead
+
+---
+
+## Reserved predicate names — gotcha
+
+Some predicate names are **real methods** on the objects `inquiry_attrs` returns.
+They are **never** handled by `method_missing` and do **not** test string equality.
+
+| Predicate | Actual behaviour |
+|---|---|
+| `.nil?` | Always `false` for present values; always `true` for blank (`NilInquiry`) |
+| `.blank?` | Tests blankness (nil / "" / whitespace) — not `value == "blank"` |
+| `.present?` | Opposite of `blank?` — not `value == "present"` |
+| `.empty?` | `true` only for `""` — not `value == "empty"` |
+| `.frozen?` | Reflects the object's freeze state |
+
+**When writing or reviewing code:** if a domain value matches one of the names
+above, use direct comparison instead:
+
+```ruby
+record.state == 'blank'    # ✅ correct
+record.state.blank?        # ❌ tests blankness, not state == "blank"
+```
+
+See `README.md` → "⚠️ Reserved predicate names" for the full worked example.

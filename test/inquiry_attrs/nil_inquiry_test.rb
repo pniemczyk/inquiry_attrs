@@ -68,6 +68,24 @@ class NilInquiryTest < Minitest::Test
     refute @instance == :active
   end
 
+  # ── type introspection ───────────────────────────────────────────────────── #
+
+  def test_is_a_nil_class
+    assert @instance.is_a?(NilClass)
+  end
+
+  def test_kind_of_nil_class
+    assert @instance.kind_of?(NilClass)
+  end
+
+  def test_instance_of_nil_class
+    assert @instance.instance_of?(NilClass)
+  end
+
+  def test_is_a_nil_inquiry
+    assert @instance.is_a?(InquiryAttrs::NilInquiry)
+  end
+
   # ── singleton guarantee ──────────────────────────────────────────────────── #
 
   def test_instance_is_frozen

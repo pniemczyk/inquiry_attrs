@@ -42,8 +42,9 @@ module InquiryAttrs
       end
     end
 
-    def is_a?(klass)    = klass == Symbol || super
+    def is_a?(klass) = klass == Symbol || super
     alias kind_of? is_a?
+    alias instance_of? is_a?
 
     def nil?    = false
     def blank?  = false

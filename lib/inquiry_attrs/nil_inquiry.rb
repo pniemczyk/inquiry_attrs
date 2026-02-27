@@ -25,6 +25,12 @@ module InquiryAttrs
       method_name.to_s.end_with?('?') || super
     end
 
+    # NilClass cannot be subclassed in Ruby, so we override the type-check
+    # methods explicitly — the same technique used by SymbolInquiry for Symbol.
+    def is_a?(klass) = klass == NilClass || super
+    alias kind_of? is_a?
+    alias instance_of? is_a?
+
     def nil? = true
     def blank? = true
     def empty? = true
