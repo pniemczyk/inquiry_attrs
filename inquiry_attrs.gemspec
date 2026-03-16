@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
     'lib/**/*.rb',
     'lib/tasks/*.rake',
     'llms/**/*.md',
+    'claude-plugin/**/*',
     'AGENTS.md',
     'CLAUDE.md',
     'README.md',

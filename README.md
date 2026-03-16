@@ -233,6 +233,41 @@ inquirer :status, :role, :plan           # multiple attributes
 
 ---
 
+## Claude Code Plugin
+
+`inquiry_attrs` ships with a Claude Code skill that teaches Claude how to install
+and use the gem in any Rails, StoreModel, or plain Ruby project.
+
+### Install the skill
+
+Download `inquiry-attrs.skill` from the releases page and import it into Claude Code:
+
+```bash
+claude skill install inquiry-attrs.skill
+```
+
+Or copy the `claude-plugin/` directory into your project:
+
+```bash
+cp -r /path/to/inquiry_attrs/claude-plugin /your/project/.claude-plugins/inquiry-attrs
+```
+
+### What the skill teaches Claude
+
+Once installed, the skill activates automatically when you ask things like:
+
+- "Add inquiry_attrs to this project"
+- "Add `.active?` / `.admin?` style methods to my model"
+- "Replace `user.status == 'active'` with predicates"
+- "Make attributes nil-safe with inquiry methods"
+- "What are the reserved predicate names in inquiry_attrs?"
+
+Claude will know how to add the gem, run the installer, use `inquirer` correctly
+in AR models, StoreModel, and plain Ruby, and avoid the reserved predicate name
+gotcha.
+
+---
+
 ## Development
 
 ```bash
